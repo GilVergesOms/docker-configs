@@ -1,0 +1,88 @@
+services:
+  transmission:
+    image: snowdreamtech/transmission:latest
+    container_name: transmission
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/config/transmission:/var/lib/transmission/config
+      - /mnt/media/downloads:/downloads
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+  
+  plex:
+    image: plexinc/pms-docker:latest
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=$TZ
+      - VERSION=docker
+      - PLEX_CLAIM=$PLEX_CLAIM
+    volumes:
+      - /mnt/media/plex/config:/config
+      - /mnt/media/plex/peliculas:/peliculas
+      - /mnt/media/plex/series:/series
+    restart: unless-stopped
+
+  flexget:
+    image: wiserain/flexget:3.5
+    container_name: flexget
+    depends_on:
+      - transmission
+    volumes:
+      - /mnt/config/flexget:/config
+      - /mnt/media/downloads:/downloads
+      - /mnt/media/plex:/media
+    ports:
+      - 5050:5050
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+    restart: unless-stopped
+    
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - /mnt/media/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /mnt/media/monitoring/prometheus/data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  node_exporter:
+    image: prom/node-exporter
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    container_name: cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - /mnt/media/monitoring/grafana:/var/lib/grafana
+    restart: unless-stopped
+

@@ -1,0 +1,78 @@
+tasks:
+
+  peliculas:
+    inputs:
+      - rss: https://episodefeed.com/rss/4159/868ce34f965f3cb704ed4ae98a074cbeb8b35b06
+      - rss: https://showrss.info/user/294195.rss?magnets=true&namespaces=true&name=null&quality=null&re=null
+
+    accept_all: yes
+    details: yes
+
+    regexp:
+      reject:
+        - '(?i)\b(cam|camrip|ts|telesync|tc|hdcam|hdtc|screener|scr|dvdscr)\b'
+        - 'S\d{1,2}E\d{1,2}'   # evita series
+
+
+    transmission:
+      host: transmission
+      port: 9091
+      path: /downloads/peliculas
+
+
+  series:
+    inputs:
+      - rss: https://episodefeed.com/rss/4159/868ce34f965f3cb704ed4ae98a074cbeb8b35b06
+      - rss: https://showrss.info/user/294195.rss?magnets=true&namespaces=true&name=null&quality=null&re=null
+
+    accept_all: yes
+    details: yes
+
+    regexp:
+      reject:
+        - '(?i)\b(cam|camrip|ts|telesync|tc|hdcam|hdtc|screener|scr|dvdscr)\b'
+        - '^(?!.*\bS\d{1,2}E\d{1,2}\b)(?!.*\b\d{1,2}x\d{1,2}\b).*'
+
+
+    transmission:
+      host: transmission
+      port: 9091
+      path: /downloads/series
+
+
+  organizar_series:
+    filesystem:
+      path: /downloads/series
+      recursive: yes
+      regexp: '.*\.(mkv|mp4|avi)$'
+
+    metainfo_series: yes
+    accept_all: yes
+
+    move:
+      to: "/media/series/{{series_name}}/Season {{series_season|pad(2)}}/"
+      rename: "{{series_name}} - S{{series_season|pad(2)}}E{{series_episode|pad(2)}}{{location|pathext}}"
+
+
+  organizar_peliculas:
+    filesystem:
+      path: /downloads/peliculas
+      recursive: yes
+      regexp: '.*\.(mkv|mp4|avi)$'
+
+    metainfo_movie: yes
+    accept_all: yes
+
+    move:
+      to: "/media/peliculas/{{movie_name}} ({{movie_year}})/"
+      rename: "{{movie_name}} ({{movie_year}}){{location|pathext}}"
+
+
+schedules:
+  - tasks: [series, peliculas]
+    interval:
+      hours: 6
+
+  - tasks: [organizar_series, organizar_peliculas]
+    interval:
+      minutes: 30

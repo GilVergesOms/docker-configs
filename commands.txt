@@ -1,0 +1,12 @@
+docker info #versión de docker
+docker pull [imagen] #Instalar una imagen
+docker images #ver imagenes descargadas 
+docker pull --platform linux/x86_64 mysql #seleccionar una plataforma en concret
+docker image rm node:version #eliminar imagen
+docker rmi [ID] #Borrar imagen por id
+docker create [imagen] #crea un contenedor. Devuelve el id del contenedor
+docker start [id] #retorna el id ejecutat
+docker ps #lista de contenedores ejecutandose
+docker stop [id] #parar el contenedor. El id es el del comendo ps
+docker ps -a #listar todos los contenedores, en ejecucion o no
+docker create --name [nombre] [imagen] #crear un contenedor y asignarle un nombre. Podremos invocarlos con ese nombre y no su id
